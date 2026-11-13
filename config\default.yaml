@@ -1,0 +1,105 @@
+project:
+  name: "ASTRAQUANT X-2026 PS-12"
+  description: "Multi-Horizon Volatility Forecasting During Overnight Gaps (NSE)"
+  timezone: "Asia/Kolkata"
+  disclaimer: "SYNTHETIC - NOT REAL MARKET RESULTS. Risk overlay research only; not investment advice."
+
+data:
+  bars_per_session: 75
+  bar_duration_minutes: 5
+  session_open: "09:15"
+  session_close: "15:30"
+  symbols: ["NIFTY50", "RELIANCE", "TCS", "HDFCBANK", "INFY", "ICICIBANK", "ITC", "LT"]
+  primary_symbol: "NIFTY50"
+  synthetic:
+    num_sessions: 60
+    start_date: "2024-01-01"
+    base_price: 21500.0
+    annual_vol: 0.15
+    seed: 42
+  proxies:
+    tickers:
+      us_fut: "^GSPC"
+      brent: "BZ=F"
+      gold: "GC=F"
+      usdinr: "INR=X"
+      india_vix: "^INDIAVIX"
+    verify_tickers: true
+
+features:
+  intraday_window: 60
+  intraday_dim: 9
+  daily_window: 20
+  daily_dim: 7
+  proxy_dim: 10
+  horizons:
+    h5m: 1
+    h1h: 12
+    h24h: 75
+
+split:
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  purge_bars: 75
+  embargo_bars: 75
+
+models:
+  lstm:
+    intraday_hidden: 64
+    daily_hidden: 32
+    trunk_hidden: 64
+    dropout: 0.1
+    heads: "coherent" # coherent or independent
+  transformer:
+    enabled: false
+    d_model: 64
+    nhead: 4
+    num_layers: 2
+  har:
+    lags: [1, 5, 22]
+  hybrid:
+    clamp_eps: 1e-4
+
+training:
+  batch_size: 256
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  grad_clip: 1.0
+  max_epochs: 60
+  patience: 8
+  huber_delta: 1.0
+  weights: [1.0, 1.0, 1.0]
+  seeds: [1, 2, 3]
+
+strategy:
+  risk_budget_daily: 0.01 # 1% daily target risk R
+  f_max: 1.0
+  gap_threshold: 0.02 # theta = 2%
+  gap_multiplier: 0.5 # kappa = 0.5
+  no_trade_band: 0.10
+  costs:
+    brokerage_bps: 2.0
+    stt_bps: 10.0
+    slippage_bps: 3.0
+    verify_current_rates: true
+
+intel:
+  domino:
+    corr_threshold: 0.40
+    decay_per_hop: 0.60
+    max_hops: 2
+  whatif:
+    fixed_scenarios: [-0.01, -0.03, -0.05, -0.08]
+    model_sigmas: [1, 2, 3]
+  liquidity:
+    uncertainty_high_quantile: 0.85
+    uncertainty_elevated_quantile: 0.65
+  news:
+    sample_path: "data/news_sample.jsonl"
+  stress_memory:
+    top_k: 3
+  blindspot:
+    stale_minutes_threshold: 15
+    max_single_weight: 0.35
+    hhi_threshold: 0.25

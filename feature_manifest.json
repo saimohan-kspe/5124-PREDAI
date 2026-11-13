@@ -1,0 +1,65 @@
+{
+  "manifest_version": "2.0.0",
+  "project": "ASTRAQUANT X-2026 PS-12",
+  "description": "Frozen feature manifest for dual-branch LSTM, HAR baseline, and coherent heads",
+  "timezone": "Asia/Kolkata",
+  "intraday": {
+    "window_length": 60,
+    "feature_count": 9,
+    "features": [
+      "log_return",
+      "abs_return",
+      "squared_return",
+      "trailing_12bar_RV",
+      "delta_log",
+      "gap_flag",
+      "tod_sin",
+      "tod_cos",
+      "bars_to_close_norm"
+    ]
+  },
+  "daily": {
+    "window_length": 20,
+    "feature_count": 7,
+    "features": [
+      "RV_day",
+      "RV_week_avg",
+      "RV_month_avg",
+      "gap_abs",
+      "gap_squared",
+      "dow_sin",
+      "dow_cos"
+    ]
+  },
+  "sample": {
+    "feature_count": 3,
+    "features": [
+      "har_pred_5m",
+      "har_pred_1h",
+      "har_pred_24h"
+    ]
+  },
+  "proxies": {
+    "feature_count": 10,
+    "features": [
+      "us_fut_ret",
+      "brent_ret",
+      "gold_ret",
+      "usdinr_ret",
+      "india_vix_chg",
+      "us_fut_mask",
+      "brent_mask",
+      "gold_mask",
+      "usdinr_mask",
+      "india_vix_mask"
+    ]
+  },
+  "targets": {
+    "horizons": {
+      "5m": { "bars": 1, "description": "5-minute forward RV" },
+      "1h": { "bars": 12, "description": "1-hour forward RV" },
+      "24h": { "bars": 75, "description": "Next trading day forward RV" }
+    },
+    "units": "percent (x100)"
+  }
+}

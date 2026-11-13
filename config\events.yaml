@@ -1,0 +1,29 @@
+events:
+  - date: "2024-02-01"
+    title: "Union Budget Presentation"
+    type: "fiscal_budget"
+    severity: "HIGH"
+    affected_sectors: ["FMCG", "Infrastructure", "Banking"]
+    description: "Union Budget tabled in Parliament. High intraday volatility expected across capital goods and financial sectors."
+    verify_dates: true
+  - date: "2024-02-08"
+    title: "RBI MPC Policy Rate Decision"
+    type: "monetary_policy"
+    severity: "HIGH"
+    affected_sectors: ["Banking"]
+    description: "Reserve Bank of India Monetary Policy Committee interest rate resolution announcement."
+    verify_dates: true
+  - date: "2024-02-29"
+    title: "NSE Monthly F&O Expiry"
+    type: "derivative_expiry"
+    severity: "MEDIUM"
+    affected_sectors: ["All"]
+    description: "Monthly equity derivative settlement causing afternoon roll-over volume spikes."
+    verify_dates: true
+  - date: "2024-03-15"
+    title: "Corporate Advance Tax Inflow"
+    type: "fiscal"
+    severity: "LOW"
+    affected_sectors: ["Banking"]
+    description: "Quarterly corporate tax outflows driving short-term banking liquidity tightness."
+    verify_dates: true

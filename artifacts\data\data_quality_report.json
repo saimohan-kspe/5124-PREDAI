@@ -1,0 +1,17 @@
+{
+  "disclaimer": "SYNTHETIC - NOT REAL MARKET RESULTS. Risk overlay research only; not investment advice.",
+  "total_input_rows": 4500,
+  "duplicate_timestamps": 0,
+  "missing_bars": 0,
+  "negative_or_zero_prices": 0,
+  "price_bound_violations": 0,
+  "session_length_violations": {},
+  "gap_distribution": {
+    "total_gaps": 59,
+    "mean_gap_minutes": 1748.3898305084747,
+    "max_gap_minutes": 5385.0,
+    "mean_gap_abs_ret_pct": 2.3423531445160175
+  },
+  "is_valid": true,
+  "final_cleaned_rows": 4500
+}

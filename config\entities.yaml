@@ -1,0 +1,53 @@
+entities:
+  - name: "Reliance Industries"
+    symbol: "RELIANCE"
+    sector: "Energy"
+    keywords: ["oil", "refining", "telecom", "jio", "retail", "crude"]
+  - name: "Tata Consultancy Services"
+    symbol: "TCS"
+    sector: "Information Technology"
+    keywords: ["it", "tech", "software", "exports", "h1b", "ai", "consulting"]
+  - name: "HDFC Bank"
+    symbol: "HDFCBANK"
+    sector: "Banking"
+    keywords: ["bank", "npa", "rbi", "repo rate", "credit", "deposits", "svb"]
+  - name: "Infosys"
+    symbol: "INFY"
+    sector: "Information Technology"
+    keywords: ["it", "tech", "guidance", "software", "nasdaq", "nvidia"]
+  - name: "ICICI Bank"
+    symbol: "ICICIBANK"
+    sector: "Banking"
+    keywords: ["bank", "credit", "lending", "interest rate", "npa"]
+  - name: "ITC"
+    symbol: "ITC"
+    sector: "FMCG"
+    keywords: ["tobacco", "cigarettes", "tax", "fmcg", "budget", "hotels"]
+  - name: "Larsen & Toubro"
+    symbol: "LT"
+    sector: "Infrastructure"
+    keywords: ["infrastructure", "capex", "budget", "defense", "orders"]
+
+sectors:
+  - "Energy"
+  - "Information Technology"
+  - "Banking"
+  - "FMCG"
+  - "Infrastructure"
+
+event_types:
+  - type: "geopolitical"
+    severity_default: 4
+    template: "Escalation in geopolitical tensions impacts global energy prices and equity risk premia."
+  - type: "policy_budget_rbi"
+    severity_default: 4
+    template: "Regulatory or fiscal policy announcement altering domestic capital taxation and sector subsidies."
+  - type: "banking_liquidity"
+    severity_default: 5
+    template: "Financial liquidity shock or contagion affecting interbank funding and banking credit spreads."
+  - type: "technology_disruption"
+    severity_default: 3
+    template: "Global tech valuation realignment or semiconductor chain disruption impacting export earnings."
+  - type: "commodities"
+    severity_default: 3
+    template: "Commodity price surge creating input cost pressure and currency valuation headwind."

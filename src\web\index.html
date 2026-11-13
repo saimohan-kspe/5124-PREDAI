@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASTRAQUANT PS-12 | Overnight Volatility & Market Sentiment Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-black: #090a0c;
+      --surface-1: #111317;
+      --surface-2: #181a20;
+      --surface-3: #22252c;
+      --border: #262932;
+      --border-hover: #3e434f;
+      --text-white: #ffffff;
+      --text-muted: #888e99;
+      --text-dim: #5c626d;
+      --red: #ef4444;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --blue: #3b82f6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-black);
+      color: var(--text-white);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* TOP BAR */
+    header {
+      background: var(--surface-1);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-logo {
+      width: 32px; height: 32px;
+      background: #fff;
+      color: #000;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 16px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .brand h1 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .brand span {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-left: 8px;
+      font-weight: 400;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tag-pill {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text-muted);
+    }
+    .tag-live {
+      color: var(--green);
+      border-color: rgba(16, 185, 129, 0.3);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tag-live::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-white);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+    .btn:hover {
+      background: var(--surface-3);
+      border-color: var(--border-hover);
+    }
+    .btn-white {
+      background: #ffffff;
+      color: #000000;
+      border: none;
+    }
+    .btn-white:hover {
+      background: #e5e7eb;
+    }
+
+    /* MAIN 2-COLUMN LAYOUT */
+    .app-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      flex: 1;
+      min-height: calc(100vh - 61px);
+    }
+    @media (max-width: 1024px) {
+      .app-layout { grid-template-columns: 1fr; }
+    }
+
+    /* LEFT SIDEBAR: CORE INFORMATION AT A GLANCE */
+    .sidebar-info {
+      background: var(--surface-1);
+      border-right: 1px solid var(--border);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .info-card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .info-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .info-metric {
+      font-size: 32px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+
+    .exposure-bar {
+      height: 6px;
+      background: var(--surface-3);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .exposure-val {
+      height: 100%;
+      background: #fff;
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+
+    /* DIRECTORY NAVIGATION LIST */
+    .nav-dirs {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .dir-heading {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-top: 8px;
+      margin-bottom: 4px;
+    }
+    .dir-link {
+      padding: 9px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+    .dir-link:hover {
+      background: var(--surface-2);
+      color: var(--text-white);
+    }
+    .dir-link.active {
+      background: var(--surface-2);
+      border-color: var(--border);
+      color: var(--text-white);
+      font-weight: 600;
+    }
+    .dir-badge {
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 2px 6px;
+      background: var(--surface-3);
+      border-radius: 4px;
+      color: var(--text-muted);
+    }
+
+    /* RIGHT CONTENT WORKSPACE */
+    .content-area {
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      overflow-y: auto;
+    }
+
+    /* GAP STORM GRAPH HERO CARD */
+    .gap-storm-hero {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+    }
+    .storm-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .storm-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .storm-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .chart-container {
+      position: relative;
+      height: 220px;
+      width: 100%;
+    }
+
+    /* HORIZON CARDS ROW */
+    .horizons-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 800px) {
+      .horizons-row { grid-template-columns: 1fr; }
+    }
+    .horizon-box {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .horizon-box.active-focus {
+      border-color: #ffffff;
+      background: var(--surface-2);
+    }
+    .h-name {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+    }
+    .h-val {
+      font-size: 26px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      margin: 6px 0;
+    }
+    .h-sub {
+      font-size: 12px;
+      color: var(--text-dim);
+      line-height: 1.4;
+    }
+
+    /* SUB-TABS BAR */
+    .subtabs-bar {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      overflow-x: auto;
+    }
+    .subtab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .subtab-btn:hover {
+      color: #fff;
+    }
+    .subtab-btn.active {
+      background: var(--surface-2);
+      border-color: var(--border);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* CARD SECTIONS */
+    .section-card {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+    }
+    .section-header {
+      margin-bottom: 18px;
+    }
+    .section-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .section-header p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    /* TABLE STYLES */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+    th {
+      color: var(--text-muted);
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-white);
+    }
+    tr:last-child td { border-bottom: none; }
+
+    /* DOMINO EFFECT INTERACTIVE VISUAL TILES */
+    .domino-flow-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+    .domino-tile {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      transition: border-color 0.2s;
+    }
+    .domino-tile.source {
+      border-color: var(--red);
+      background: #191214;
+    }
+    .domino-tile.contagion {
+      border-color: #3b4252;
+    }
+    .domino-tile.buffer {
+      border-color: #1f2e26;
+      background: #0f1613;
+    }
+
+    /* NEWS GRID */
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .news-item {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">AQ</div>
+      <div>
+        <h1>ASTRAQUANT X-2026 <span>PS-12 Volatility & Sentiment Engine</span></h1>
+      </div>
+    </div>
+    <div class="top-actions">
+      <span class="tag-pill tag-live">NSE REPLAY 60x</span>
+      <span class="tag-pill">SYNTHETIC EXPERIMENTAL RUN</span>
+      <button class="btn btn-white" onclick="stepNextBar()">Next 5m Bar</button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    
+    <!-- LEFT SIDEBAR: ESSENTIAL METRICS & DIRECTORY SWITCHER -->
+    <aside class="sidebar-info">
+      
+      <!-- Primary Volatility Reading -->
+      <div class="info-card">
+        <div class="info-title">24h Volatility Target</div>
+        <div class="info-metric" id="sideVol">18.42%</div>
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+          Overnight Gap Share: <strong style="color: #fff;" id="sideGapShare">62.4%</strong>
+        </div>
+      </div>
+
+      <!-- Live Cash Market Price -->
+      <div class="info-card">
+        <div class="info-title">NSE NIFTY 50 Index</div>
+        <div class="info-metric" style="font-size: 24px;" id="sidePrice">₹21,845.20</div>
+        <div style="font-size: 12px; color: var(--red);" id="sideGapRet">Opening Gap: -1.45% (17.75h)</div>
+      </div>
+
+      <!-- Risk Exposure Signal -->
+      <div class="info-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div class="info-title">Exposure Sizing</div>
+          <span class="tag-pill" style="color: var(--red); font-weight: 700;" id="sideSignalPill">SELL</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 14px; font-weight: 600; margin-top: 8px;">
+          <span>Target Fraction</span>
+          <span style="font-family: 'JetBrains Mono';" id="sideFraction">0.45 (₹45,000)</span>
+        </div>
+        <div class="exposure-bar">
+          <div class="exposure-val" id="sideExposureFill" style="width: 45%;"></div>
+        </div>
+        <div style="font-size: 11px; color: var(--text-dim); margin-top: 8px;">
+          Risk Budget $R = 1.0\%$. Target fraction adjusted automatically to buffer overnight variance.
+        </div>
+      </div>
+
+      <!-- Navigation Directories -->
+      <div>
+        <div class="dir-heading">Navigation Directories</div>
+        <div class="nav-dirs">
+          <div class="dir-link active" id="dir-overnight" onclick="switchDirectory('overnight')">
+            <span>⚡ Overnight Risk Engines</span>
+            <span class="dir-badge">7 Modules</span>
+          </div>
+          <div class="dir-link" id="dir-sentiment" onclick="switchDirectory('sentiment')">
+            <span>📊 Market Sentiment Intelligence</span>
+            <span class="dir-badge">NEW</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Market Data Freshness -->
+      <div style="margin-top: auto; font-size: 11px; color: var(--text-dim); line-height: 1.5;">
+        Session: <strong>09:15-15:30 IST</strong> (75 Bars)<br>
+        Closure: <strong>ln Δt = 5.36 (1,065 min)</strong><br>
+        Status: <strong>Normal Operating Parameters</strong>
+      </div>
+    </aside>
+
+    <!-- RIGHT CONTENT AREA -->
+    <main class="content-area">
+
+      <!-- GAP STORM GRAPH (Always visible for real-time gap visual inspection) -->
+      <div class="gap-storm-hero">
+        <div class="storm-header">
+          <div>
+            <div class="storm-title">Overnight Gap Volatility Storm Graph</div>
+            <div class="storm-subtitle">Real-time observation of price dislocation & volatility expansion across market closure</div>
+          </div>
+          <div style="text-align: right;">
+            <span class="tag-pill" style="color: #fff; font-weight: 600;">17.75h OVERNIGHT CLOSURE</span>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="gapStormChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 3 HORIZONS RADAR -->
+      <div class="horizons-row">
+        <div class="horizon-box">
+          <div class="h-name"><span>5-Min Micro-Vol</span><span>K = 1 Bar</span></div>
+          <div class="h-val" id="card5m">2.14%</div>
+          <div class="h-sub">ln Δt = 1.61. Immediate intraday volatility & flash-crash monitoring.</div>
+        </div>
+        <div class="horizon-box">
+          <div class="h-name"><span>1-Hour Volatility</span><span>K = 12 Bars</span></div>
+          <div class="h-val" id="card1h">5.82%</div>
+          <div class="h-sub">Morning order-flow resolution and U-shape volume discovery.</div>
+        </div>
+        <div class="horizon-box active-focus">
+          <div class="h-name"><span>24-Hour Next-Day</span><span style="color: #fff;">K = 75 + Closures</span></div>
+          <div class="h-val" id="card24h">18.42%</div>
+          <div class="h-sub">Coherent variance head integrating crossed overnight closures.</div>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- DIRECTORY 1: OVERNIGHT RISK ENGINES (7 MODULES)                 -->
+      <!-- ============================================================== -->
+      <div id="dir-container-overnight">
+        
+        <!-- Sub-tabs for the 7 Modules -->
+        <div class="subtabs-bar">
+          <button class="subtab-btn active" onclick="switchOvernightSubtab('domino')">1. Portfolio Domino</button>
+          <button class="subtab-btn" onclick="switchOvernightSubtab('whatif')">2. Overnight What-If</button>
+          <button class="subtab-btn" onclick="switchOvernightSubtab('liquidity')">3. Liquidity Trap</button>
+          <button class="subtab-btn" onclick="switchOvernightSubtab('news')">4. AI News-to-Risk</button>
+          <button class="subtab-btn" onclick="switchOvernightSubtab('confidence')">5. AI Confidence</button>
+          <button class="subtab-btn" onclick="switchOvernightSubtab('stress')">6. Stress Memory</button>
+          <button class="subtab-btn" onclick="switchOvernightSubtab('blindspot')">7. Risk Blind-Spots</button>
+        </div>
+
+        <!-- 1. PORTFOLIO DOMINO EFFECT DETECTOR (REVAMPED USER-FRIENDLY VISUAL CHAIN) -->
+        <div id="subtab-domino" class="section-card" style="margin-top: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div class="section-header" style="margin-bottom: 0;">
+              <h2>Portfolio Domino Effect Detector</h2>
+              <p>Traders own multiple stocks with hidden shared sector exposure. Simulate an overnight shock to watch the chain reaction unfold.</p>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <span style="font-size: 12px; color: var(--text-muted);">Shock Stock:</span>
+              <select id="dominoStock" class="btn" onchange="fetchDomino()">
+                <option value="TCS">TCS (IT Sector)</option>
+                <option value="RELIANCE">RELIANCE (Energy)</option>
+                <option value="HDFCBANK">HDFCBANK (Banking)</option>
+                <option value="ITC">ITC (FMCG)</option>
+              </select>
+              <select id="dominoPct" class="btn" onchange="fetchDomino()">
+                <option value="-0.03">-3% Gap</option>
+                <option value="-0.05" selected>-5% Gap</option>
+                <option value="-0.08">-8% Crisis</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Total Rupee Loss Banner -->
+          <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin: 16px 0; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Net Portfolio Drawdown (₹1,00,000 Portfolio)</div>
+              <div style="font-size: 24px; font-weight: 800; font-family: 'JetBrains Mono'; color: var(--red); margin-top: 2px;" id="dominoNetInr">-₹2,750.00 (-2.75%)</div>
+            </div>
+            <div style="font-size: 12px; color: var(--text-dim); text-align: right;">
+              Transmission Rule: $\beta_{j|i} = \rho_{ij} \cdot (\sigma_j / \sigma_i)$<br>
+              <em>* Statistical co-movement, NOT proven causality</em>
+            </div>
+          </div>
+
+          <!-- User-Friendly Visual Domino Chain Flow -->
+          <div class="domino-flow-container" id="dominoVisualTiles">
+            <!-- Dynamically populated domino tiles -->
+          </div>
+        </div>
+
+        <!-- 2. OVERNIGHT WHAT-IF SIMULATOR -->
+        <div id="subtab-whatif" class="section-card" style="margin-top: 14px; display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div class="section-header" style="margin-bottom: 0;">
+              <h2>Overnight What-If Simulator</h2>
+              <p>Translates abstract volatility percentages into understandable financial scenario values before the market opens.</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 12px; color: var(--text-muted);">Capital (₹):</span>
+              <input type="number" id="whatifCap" value="100000" class="btn" style="width: 120px; font-family: 'JetBrains Mono';" oninput="fetchWhatIf()">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">STANDARD SCENARIOS</div>
+              <table>
+                <thead>
+                  <tr><th>Scenario</th><th>Drawdown</th><th>Portfolio Value</th><th>Net P&L</th></tr>
+                </thead>
+                <tbody id="whatifFixedRows"></tbody>
+              </table>
+            </div>
+            <div>
+              <div style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">MODEL TAIL FORECAST (V_gap Calibrated)</div>
+              <table>
+                <thead>
+                  <tr><th>Tail Jump</th><th>Estimated Drop</th><th>Projected Value</th></tr>
+                </thead>
+                <tbody id="whatifModelRows"></tbody>
+              </table>
+              <div style="margin-top: 10px; font-size: 11px; color: var(--text-dim);">
+                <em>* SIMULATIONS, NOT PREDICTIONS. Scaled by 24h coherent overnight gap ratio.</em>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. LIQUIDITY TRAP DETECTOR -->
+        <div id="subtab-liquidity" class="section-card" style="margin-top: 14px; display: none;">
+          <div class="section-header">
+            <h2>Liquidity Trap Detector</h2>
+            <p>Monitors bid-ask spreads, volume elasticities, and execution uncertainty. A quoted price is not guarantee of execution.</p>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;">
+            <div class="info-card">
+              <div class="info-title">Corwin-Schultz Spread Proxy</div>
+              <div class="info-metric" style="color: var(--amber);">14.8 bps</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Baseline norm: 3.2 bps (4.6x widened)</div>
+            </div>
+            <div class="info-card">
+              <div class="info-title">Volume Elasticity (Z-Score)</div>
+              <div class="info-metric" style="color: var(--red);">-1.35 σ</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Low volume depth at session open</div>
+            </div>
+            <div class="info-card">
+              <div class="info-title">Execution Uncertainty Score</div>
+              <div class="info-metric" style="color: var(--red);">78.5 / 100</div>
+              <div style="font-size: 12px; color: var(--red); font-weight: 600; margin-top: 4px;">HIGH SLIPPAGE RISK</div>
+            </div>
+          </div>
+          <div style="margin-top: 14px; font-size: 12px; color: var(--text-dim);">
+            <em>* PROXY: Corwin-Schultz High-Low Estimator & Amihud Illiquidity, not order-book depth.</em>
+          </div>
+        </div>
+
+        <!-- 4. AI NEWS-TO-RISK INTELLIGENCE -->
+        <div id="subtab-news" class="section-card" style="margin-top: 14px; display: none;">
+          <div class="section-header">
+            <h2>AI News-to-Risk Intelligence</h2>
+            <p>Connects critical global headlines to exposed Indian market sectors and portfolio holdings.</p>
+          </div>
+          <div class="news-grid" id="newsCardsContainer"></div>
+        </div>
+
+        <!-- 5. AI CONFIDENCE & DISAGREEMENT -->
+        <div id="subtab-confidence" class="section-card" style="margin-top: 14px; display: none;">
+          <div class="section-header">
+            <h2>AI Confidence & Disagreement Detector</h2>
+            <p>The system compares multiple forecasting models and admits when it doesn't know enough.</p>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <table>
+              <thead>
+                <tr><th>Model</th><th>Type</th><th>24h Vol Forecast</th></tr>
+              </thead>
+              <tbody id="disagreementRows"></tbody>
+            </table>
+            <div class="info-card" style="display: flex; flex-direction: column; justify-content: center;">
+              <div class="info-title">Model Disagreement Index</div>
+              <div class="info-metric" style="color: var(--amber);">0.168</div>
+              <div style="font-size: 13px; font-weight: 700; color: var(--amber); margin-top: 4px;">HIGH MODEL DISAGREEMENT</div>
+              <div style="font-size: 12px; color: var(--text-dim); margin-top: 10px; line-height: 1.5;">
+                Conformal 90% Confidence Interval: [15.20% – 21.40%].<br>
+                Deep LSTM models integrate overnight global proxies, whereas Corsi HAR-RV relies on historical daily closing lags.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. MARKET STRESS MEMORY -->
+        <div id="subtab-stress" class="section-card" style="margin-top: 14px; display: none;">
+          <div class="section-header">
+            <h2>Market Stress Memory</h2>
+            <p>Identifies historical periods with similar volatility patterns using kNN search strictly over past sessions.</p>
+          </div>
+          <div id="stressMatchesContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
+        </div>
+
+        <!-- 7. RISK BLIND-SPOTS -->
+        <div id="subtab-blindspot" class="section-card" style="margin-top: 14px; display: none;">
+          <div class="section-header">
+            <h2>Risk Blind-Spot Detector</h2>
+            <p>Monitors stale data, concentration risks, upcoming events, and lists risks that the main model does not cover.</p>
+          </div>
+          <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px;">
+            <table>
+              <thead>
+                <tr><th>Category</th><th>Risk Item</th><th>Status</th><th>Diagnostic</th></tr>
+              </thead>
+              <tbody id="blindspotRows"></tbody>
+            </table>
+            <div class="info-card">
+              <div class="info-title" style="color: var(--red);">Explicitly Not Modelled</div>
+              <ul style="font-size: 12px; color: var(--text-muted); line-height: 1.8; margin-left: 16px; margin-top: 8px;">
+                <li>Unscheduled geopolitical shocks occurring between 02:00 and 06:00 IST</li>
+                <li>Individual stock 10%/20% circuit-breaker halts</li>
+                <li>Sudden regulatory capital taxation announcements</li>
+                <li>Promoter block deals and unannounced corporate actions</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- DIRECTORY 2: MARKET SENTIMENT INTELLIGENCE (NEW DIRECTORY)      -->
+      <!-- ============================================================== -->
+      <div id="dir-container-sentiment" style="display: none;">
+        
+        <!-- Subtabs for Sentiment Intelligence -->
+        <div class="subtabs-bar">
+          <button class="subtab-btn active" onclick="switchSentimentSubtab('pcr')">1. Put-Call Ratio (PCR)</button>
+          <button class="subtab-btn" onclick="switchSentimentSubtab('mmi')">2. Market Mood Index (MMI)</button>
+          <button class="subtab-btn" onclick="switchSentimentSubtab('divergence')">3. Sentiment-Vol Divergence</button>
+          <button class="subtab-btn" onclick="switchSentimentSubtab('sentiment-history')">4. Sentiment History</button>
+        </div>
+
+        <!-- 1. PUT-CALL RATIO (PCR) -->
+        <div id="subtab-pcr" class="section-card" style="margin-top: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div class="section-header" style="margin-bottom: 0;">
+              <h2>Put-Call Ratio (PCR)</h2>
+              <p>Key options derivative sentiment indicator tracking institutional hedging vs bullish positioning.</p>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-white" onclick="updatePcrPeriod('today', this)">Today</button>
+              <button class="btn" onclick="updatePcrPeriod('5d', this)">5D</button>
+              <button class="btn" onclick="updatePcrPeriod('1m', this)">1M</button>
+              <button class="btn" onclick="updatePcrPeriod('3m', this)">3M</button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 18px 0;">
+            <div class="info-card">
+              <div class="info-title">Put Open Interest (OI)</div>
+              <div class="info-metric" style="font-size: 24px;">12.84 Cr</div>
+              <div style="font-size: 12px; color: var(--green); margin-top: 4px;">Put Writers Building Floor</div>
+            </div>
+            <div class="info-card">
+              <div class="info-title">Call Open Interest (OI)</div>
+              <div class="info-metric" style="font-size: 24px;">10.52 Cr</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Call Resistance Strike Level</div>
+            </div>
+            <div class="info-card">
+              <div class="info-title">Current PCR Level</div>
+              <div class="info-metric" style="color: var(--green);">1.22</div>
+              <div style="font-size: 12px; color: var(--green); font-weight: 600; margin-top: 4px;">BULLISH SUPPORT ZONE</div>
+            </div>
+          </div>
+
+          <div style="height: 180px; margin-bottom: 16px;">
+            <canvas id="pcrTrendChart"></canvas>
+          </div>
+
+          <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; font-size: 12px; line-height: 1.6;">
+            <strong>Beginner-Friendly Explanation:</strong> The Put-Call Ratio (PCR) is calculated as $\text{Put OI} / \text{Call OI}$. 
+            When PCR is above 1.0 (currently <strong>1.22</strong>), it signifies that option writers are aggressively selling Puts, creating strong institutional support. A PCR below 0.8 signifies heavy bearish Call writing.
+            <div style="margin-top: 8px; color: var(--text-dim);">
+              Data Source: <strong>NSE Equity Derivatives (F&O) Nifty Weekly Expiry</strong> | Freshness: <strong>Real-time feed (refreshed 2m ago)</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. MARKET MOOD INDEX (MMI) -->
+        <div id="subtab-mmi" class="section-card" style="margin-top: 14px; display: none;">
+          <div class="section-header">
+            <h2>Market Mood Index (MMI)</h2>
+            <p>Comprehensive market sentiment gauge calculated from verified quantitative indicators.</p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px;">
+            <div class="info-card" style="display: flex; flex-direction: column; justify-content: center; text-align: center;">
+              <div class="info-title">Market Mood Score (0 - 100)</div>
+              <div class="info-metric" style="font-size: 54px; color: var(--amber); margin: 8px 0;">42.6</div>
+              <div style="font-size: 14px; font-weight: 700; color: var(--amber);">FEAR ZONE (30 – 50)</div>
+              <div style="margin-top: 12px; font-size: 11px; color: var(--text-dim);">
+                Extreme Fear &lt; 30 | Fear 30-50 | Greed 50-70 | Extreme Greed &gt; 70
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div style="height: 150px;">
+                <canvas id="mmiTrendChart"></canvas>
+              </div>
+              <div style="font-size: 12px; color: var(--text-muted); background: var(--surface-2); padding: 12px; border-radius: 8px; border: 1px solid var(--border); line-height: 1.5;">
+                <strong>Verified Methodology:</strong> Composite index synthesizing 6 verified market drivers: FII/DII net flows, India VIX volatility momentum, market breadth (advance-decline ratio), skewness, and price momentum vs 50-EMA.<br>
+                <span class="tag-pill" style="margin-top: 6px; display: inline-block;">SIMULATED DEMO DATA (Calibrated for Hackathon Demo)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. SENTIMENT-VOLATILITY DIVERGENCE -->
+        <div id="subtab-divergence" class="section-card" style="margin-top: 14px; display: none;">
+          <div class="section-header">
+            <h2>Sentiment-Volatility Divergence Detector</h2>
+            <p>Identifies dangerous market disconnects when derivatives sentiment contradicts forecast volatility.</p>
+          </div>
+
+          <div style="background: #1c1510; border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 10px; padding: 18px; margin-bottom: 18px;">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--amber); text-transform: uppercase;">
+              ⚠️ UNUSUAL DIVERGENCE DETECTED
+            </div>
+            <div style="font-size: 16px; font-weight: 700; margin: 8px 0;">
+              High Overnight Tail Volatility (18.42%) vs Bullish Put Support (PCR 1.22)
+            </div>
+            <div style="font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+              <strong>AI Explanatory Assessment:</strong> While domestic option writers are heavily writing Puts (believing 21,700 will hold), our global overnight proxy models detect sharp moves in Brent Crude (+2.85%) and US Futures (-1.68%). 
+              This creates a high-risk <strong>Short-Squeeze Divergence</strong>: if the opening gap breaches 21,700, aggressive Put unwinding could trigger an accelerated morning cascade.
+            </div>
+            <div style="margin-top: 10px; font-size: 11px; color: var(--text-dim);">
+              <em>* Informational risk alert only; does not constitute investment advice or a guaranteed directional prediction.</em>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;">
+            <div class="info-card">
+              <div class="info-title">24h Volatility Head</div>
+              <div class="info-metric">18.42%</div>
+              <div style="font-size: 12px; color: var(--red); margin-top: 4px;">High Tail Risk</div>
+            </div>
+            <div class="info-card">
+              <div class="info-title">Put-Call Ratio (PCR)</div>
+              <div class="info-metric" style="color: var(--green);">1.22</div>
+              <div style="font-size: 12px; color: var(--green); margin-top: 4px;">Bullish Domestic Positioning</div>
+            </div>
+            <div class="info-card">
+              <div class="info-title">Market Mood (MMI)</div>
+              <div class="info-metric" style="color: var(--amber);">42.6</div>
+              <div style="font-size: 12px; color: var(--amber); margin-top: 4px;">Fearful Macro Environment</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. SENTIMENT HISTORY -->
+        <div id="subtab-sentiment-history" class="section-card" style="margin-top: 14px; display: none;">
+          <div class="section-header">
+            <h2>Sentiment & Volatility Historical Comparison</h2>
+            <p>Compare historical PCR, Market Mood Index (MMI), and 24h Realised Volatility changes over time.</p>
+          </div>
+          <div style="height: 240px; margin-bottom: 16px;">
+            <canvas id="sentimentHistoryChart"></canvas>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Session Date</th><th>PCR Ratio</th><th>Market Mood (MMI)</th><th>24h Realised Vol</th><th>Regime Context</th></tr>
+            </thead>
+            <tbody id="sentimentHistoryTable"></tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    let stormChart = null;
+    let pcrChart = null;
+    let mmiChart = null;
+    let historyChart = null;
+    let sentimentData = null;
+
+    // Directory Switcher
+    function switchDirectory(dir) {
+      document.getElementById('dir-overnight').classList.remove('active');
+      document.getElementById('dir-sentiment').classList.remove('active');
+      document.getElementById('dir-container-overnight').style.display = 'none';
+      document.getElementById('dir-container-sentiment').style.display = 'none';
+
+      if (dir === 'overnight') {
+        document.getElementById('dir-overnight').classList.add('active');
+        document.getElementById('dir-container-overnight').style.display = 'block';
+      } else {
+        document.getElementById('dir-sentiment').classList.add('active');
+        document.getElementById('dir-container-sentiment').style.display = 'block';
+        initSentimentCharts();
+      }
+    }
+
+    // Overnight Subtab Switcher
+    function switchOvernightSubtab(tab) {
+      const tabs = ['domino', 'whatif', 'liquidity', 'news', 'confidence', 'stress', 'blindspot'];
+      tabs.forEach(t => {
+        const el = document.getElementById('subtab-' + t);
+        if (el) el.style.display = 'none';
+      });
+      document.querySelectorAll('#dir-container-overnight .subtab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('subtab-' + tab).style.display = 'block';
+      event.target.classList.add('active');
+    }
+
+    // Sentiment Subtab Switcher
+    function switchSentimentSubtab(tab) {
+      const tabs = ['pcr', 'mmi', 'divergence', 'sentiment-history'];
+      tabs.forEach(t => {
+        const el = document.getElementById('subtab-' + t);
+        if (el) el.style.display = 'none';
+      });
+      document.querySelectorAll('#dir-container-sentiment .subtab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('subtab-' + tab).style.display = 'block';
+      event.target.classList.add('active');
+      if (tab === 'pcr' && pcrChart) pcrChart.resize();
+      if (tab === 'mmi' && mmiChart) mmiChart.resize();
+      if (tab === 'sentiment-history' && historyChart) historyChart.resize();
+    }
+
+    async function fetchWithFallback(url, fallbackData) {
+      if (window.location.protocol === 'file:') {
+        return fallbackData;
+      }
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return await res.json();
+      } catch (e) {
+        console.warn('API fetch failed for ' + url + ', using embedded state:', e);
+        return fallbackData;
+      }
+    }
+    async function stepNextBar() {
+      try {
+        const res = await fetch('/api/step', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          updateSidebarState(data.state);
+          fetchGapStormData();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function updateSidebarState(state) {
+      document.getElementById('sidePrice').innerText = '₹' + state.price.toFixed(2);
+      document.getElementById('sideVol').innerText = state.volatility_forecasts.h24h.rv_pct.toFixed(2) + '%';
+      document.getElementById('sideGapShare').innerText = (state.gap_share_budget * 100).toFixed(1) + '%';
+      document.getElementById('card5m').innerText = state.volatility_forecasts.h5m.rv_pct.toFixed(2) + '%';
+      document.getElementById('card1h').innerText = state.volatility_forecasts.h1h.rv_pct.toFixed(2) + '%';
+      document.getElementById('card24h').innerText = state.volatility_forecasts.h24h.rv_pct.toFixed(2) + '%';
+      
+      const sigPill = document.getElementById('sideSignalPill');
+      sigPill.innerText = state.signal.decision;
+      document.getElementById('sideFraction').innerText = state.signal.target_fraction.toFixed(2) + ' (₹' + (state.signal.target_fraction * 100000).toLocaleString('en-IN') + ')';
+      document.getElementById('sideExposureFill').style.width = (state.signal.target_fraction * 100) + '%';
+    }
+
+    // Gap Storm Chart
+    async function fetchGapStormData() {
+      try {
+        const res = await fetch('/api/gap-storm');
+        const data = await res.json();
+
+        const ctx = document.getElementById('gapStormChart').getContext('2d');
+        if (stormChart) {
+          stormChart.data.labels = data.timeline;
+          stormChart.data.datasets[0].data = data.prices;
+          stormChart.data.datasets[1].data = data.volatility_pct;
+          stormChart.update();
+          return;
+        }
+
+        stormChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: data.timeline,
+            datasets: [
+              {
+                label: 'NIFTY 50 Price (₹)',
+                data: data.prices,
+                borderColor: '#ffffff',
+                backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                borderWidth: 2,
+                tension: 0.2,
+                pointRadius: (ctx) => (ctx.dataIndex === data.gap_point_index || ctx.dataIndex === data.reopen_index ? 6 : 0),
+                pointBackgroundColor: (ctx) => (ctx.dataIndex === data.gap_point_index ? '#ef4444' : '#10b981'),
+                yAxisID: 'y'
+              },
+              {
+                label: 'Overnight Volatility %',
+                data: data.volatility_pct,
+                borderColor: '#ef4444',
+                borderDash: [5, 5],
+                borderWidth: 1.5,
+                tension: 0.3,
+                pointRadius: 0,
+                yAxisID: 'y1'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: {
+                labels: { color: '#888e99', font: { family: 'Inter', size: 11 } }
+              }
+            },
+            scales: {
+              x: {
+                grid: { color: '#1c1f26' },
+                ticks: { color: '#5c626d', font: { family: 'JetBrains Mono', size: 10 } }
+              },
+              y: {
+                type: 'linear',
+                position: 'left',
+                grid: { color: '#1c1f26' },
+                ticks: { color: '#888e99', font: { family: 'JetBrains Mono', size: 10 } }
+              },
+              y1: {
+                type: 'linear',
+                position: 'right',
+                grid: { drawOnChartArea: false },
+                ticks: { color: '#ef4444', font: { family: 'JetBrains Mono', size: 10 }, callback: v => v + '%' }
+              }
+            }
+          }
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Domino Effect Handler (User-Friendly Visual Domino Flow)
+    async function fetchDomino() {
+      const stock = document.getElementById('dominoStock').value;
+      const shock = document.getElementById('dominoPct').value;
+      try {
+        const res = await fetch(`/api/domino?stock=${stock}&shock=${shock}`);
+        const data = await res.json();
+
+        document.getElementById('dominoNetInr').innerText = (data.portfolio_loss_inr < 0 ? '-₹' : '₹') + Math.abs(data.portfolio_loss_inr).toLocaleString('en-IN') + ` (${data.portfolio_loss_pct}%)`;
+
+        const container = document.getElementById('dominoVisualTiles');
+        container.innerHTML = '';
+
+        data.ranked_holdings.forEach(item => {
+          const tile = document.createElement('div');
+          const isSource = item.is_shock_source;
+          const isBuffer = item.beta_vs_shock < 0.4 && !isSource;
+          tile.className = `domino-tile ${isSource ? 'source' : (isBuffer ? 'buffer' : 'contagion')}`;
+          
+          tile.innerHTML = `
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 15px; font-weight: 800;">${item.symbol}</span>
+                <span class="tag-pill" style="font-size: 10px;">${item.sector}</span>
+              </div>
+              <div style="font-size: 11px; color: var(--text-dim); margin-top: 4px;">${item.name} · Weight ${item.weight_pct}%</div>
+            </div>
+
+            <div style="margin: 8px 0;">
+              <div style="font-size: 11px; color: var(--text-muted);">${item.relation}</div>
+              <div style="font-size: 20px; font-weight: 800; font-family: 'JetBrains Mono'; color: ${item.impact_pct < 0 ? 'var(--red)' : 'var(--green)'}; margin-top: 2px;">
+                ${item.impact_pct}% (${item.loss_inr < 0 ? '-₹' : '₹'}${Math.abs(item.loss_inr).toLocaleString('en-IN')})
+              </div>
+            </div>
+
+            <div style="font-size: 11px; color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 8px;">
+              Sensitivity: $\\beta = ${item.beta_vs_shock}$ | ${item.desc}
+            </div>
+          `;
+          container.appendChild(tile);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // What-If Handler
+    async function fetchWhatIf() {
+      const cap = document.getElementById('whatifCap').value || 100000;
+      try {
+        const res = await fetch(`/api/whatif?portfolio=${cap}`);
+        const data = await res.json();
+
+        const fixedT = document.getElementById('whatifFixedRows');
+        fixedT.innerHTML = '';
+        data.fixed_scenarios.forEach(sc => {
+          const r = document.createElement('tr');
+          r.innerHTML = `
+            <td><strong>${sc.scenario}</strong></td>
+            <td style="color: var(--red);">${sc.drop_pct}%</td>
+            <td style="font-family: 'JetBrains Mono'; font-weight: 600;">₹${Math.round(sc.value).toLocaleString('en-IN')}</td>
+            <td style="color: var(--red); font-family: 'JetBrains Mono';">-₹${Math.abs(Math.round(sc.pnl)).toLocaleString('en-IN')}</td>
+          `;
+          fixedT.appendChild(r);
+        });
+
+        const modelT = document.getElementById('whatifModelRows');
+        modelT.innerHTML = '';
+        data.model_scenarios.forEach(sc => {
+          const r = document.createElement('tr');
+          r.innerHTML = `
+            <td><strong>${sc.name}</strong></td>
+            <td style="color: var(--red);">${sc.pct}%</td>
+            <td style="font-family: 'JetBrains Mono'; font-weight: 600;">₹${Math.round(sc.value).toLocaleString('en-IN')}</td>
+          `;
+          modelT.appendChild(r);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Load News
+    async function fetchNews() {
+      try {
+        const res = await fetch('/api/news');
+        const list = await res.json();
+        const container = document.getElementById('newsCardsContainer');
+        container.innerHTML = '';
+        list.forEach(item => {
+          const c = document.createElement('div');
+          c.className = 'news-item';
+          c.innerHTML = `
+            <div style="display: flex; justify-content: space-between; font-size: 11px;">
+              <span class="tag-pill" style="color: var(--blue);">${item.tag}</span>
+              <span style="color: var(--text-dim);">${item.time}</span>
+            </div>
+            <div style="font-size: 14px; font-weight: 700;">${item.title}</div>
+            <div style="font-size: 12px; color: var(--text-muted); line-height: 1.4;"><strong>What Happened:</strong> ${item.what_happened}</div>
+            <div style="font-size: 12px; color: #fff; background: var(--surface-3); padding: 8px 10px; border-radius: 6px;">
+              <strong>Model Action:</strong> ${item.model_action}
+            </div>
+            <div style="font-size: 11px; color: var(--text-dim);">
+              Exposed: <strong>${item.exposed_sector}</strong> | Holdings: <strong>${item.affected_holdings.join(', ')}</strong>
+            </div>
+          `;
+          container.appendChild(c);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Load Disagreement
+    async function fetchDisagreement() {
+      try {
+        const res = await fetch('/api/disagreement');
+        const data = await res.json();
+        const tbody = document.getElementById('disagreementRows');
+        tbody.innerHTML = '';
+        data.ensemble_models.forEach(m => {
+          const r = document.createElement('tr');
+          r.innerHTML = `
+            <td><strong>${m.model}</strong></td>
+            <td style="color: var(--text-muted);">${m.type}</td>
+            <td style="font-family: 'JetBrains Mono'; font-weight: 700;">${m.forecast_24h_pct.toFixed(2)}%</td>
+          `;
+          tbody.appendChild(r);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Load Stress Memory
+    async function fetchStressMemory() {
+      try {
+        const res = await fetch('/api/stress-memory');
+        const data = await res.json();
+        const container = document.getElementById('stressMatchesContainer');
+        container.innerHTML = '';
+        data.historical_matches.forEach(m => {
+          const d = document.createElement('div');
+          d.className = 'info-card';
+          d.innerHTML = `
+            <div style="display: flex; justify-content: space-between;">
+              <strong style="color: #fff;">${m.event} (${m.date})</strong>
+              <span class="tag-pill">Similarity: ${(m.similarity_score * 100).toFixed(0)}%</span>
+            </div>
+            <div style="font-size: 12px; color: var(--text-muted); margin: 6px 0;"><strong>Historical Gap:</strong> ${m.gap_pct}% | <strong>Result:</strong> ${m.what_followed}</div>
+            <div style="font-size: 11px; color: var(--amber);">Key Difference: ${m.key_differences}</div>
+          `;
+          container.appendChild(d);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Load Blindspots
+    async function fetchBlindspots() {
+      try {
+        const res = await fetch('/api/blindspots');
+        const data = await res.json();
+        const tbody = document.getElementById('blindspotRows');
+        tbody.innerHTML = '';
+        data.checklist.forEach(item => {
+          const r = document.createElement('tr');
+          const color = item.severity === 'WARNING' ? 'var(--red)' : 'var(--green)';
+          r.innerHTML = `
+            <td><span class="tag-pill">${item.category}</span></td>
+            <td><strong>${item.name}</strong></td>
+            <td style="color: ${color}; font-weight: 700;">${item.status}</td>
+            <td style="font-size: 12px; color: var(--text-muted);">${item.detail}</td>
+          `;
+          tbody.appendChild(r);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Load Market Sentiment Intelligence
+    async function fetchSentiment() {
+      try {
+        const res = await fetch('/api/sentiment');
+        sentimentData = await res.json();
+
+        // Populate Sentiment History Table
+        const histTable = document.getElementById('sentimentHistoryTable');
+        histTable.innerHTML = '';
+        sentimentData.history.forEach(h => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${h.date}</strong></td>
+            <td style="font-family: 'JetBrains Mono';">${h.pcr}</td>
+            <td style="font-family: 'JetBrains Mono';">${h.mmi}</td>
+            <td style="font-family: 'JetBrains Mono';">${h.vol_24h}%</td>
+            <td><span class="tag-pill">${h.pcr > 1.1 ? 'Bullish Support' : 'Neutral'}</span></td>
+          `;
+          histTable.appendChild(tr);
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function initSentimentCharts() {
+      if (!sentimentData) return;
+
+      // 1. PCR Trend Chart
+      if (!pcrChart) {
+        const ctxPcr = document.getElementById('pcrTrendChart').getContext('2d');
+        pcrChart = new Chart(ctxPcr, {
+          type: 'line',
+          data: {
+            labels: ['09:15', '10:30', '11:45', '13:00', '14:15', '15:25'],
+            datasets: [{
+              label: 'Put-Call Ratio (PCR)',
+              data: sentimentData.pcr.periods.today,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.05)',
+              borderWidth: 2,
+              tension: 0.25,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: '#1c1f26' }, ticks: { color: '#5c626d' } },
+              y: { grid: { color: '#1c1f26' }, ticks: { color: '#888e99' } }
+            }
+          }
+        });
+      }
+
+      // 2. MMI Trend Chart
+      if (!mmiChart) {
+        const ctxMmi = document.getElementById('mmiTrendChart').getContext('2d');
+        mmiChart = new Chart(ctxMmi, {
+          type: 'line',
+          data: {
+            labels: ['D-6', 'D-5', 'D-4', 'D-3', 'D-2', 'D-1', 'Today'],
+            datasets: [{
+              label: 'Market Mood Index',
+              data: sentimentData.mmi.trend_7d,
+              borderColor: '#f59e0b',
+              borderWidth: 2,
+              tension: 0.2
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: '#1c1f26' }, ticks: { color: '#5c626d' } },
+              y: { min: 0, max: 100, grid: { color: '#1c1f26' }, ticks: { color: '#888e99' } }
+            }
+          }
+        });
+      }
+
+      // 3. Sentiment History Dual Axis Chart
+      if (!historyChart) {
+        const ctxHist = document.getElementById('sentimentHistoryChart').getContext('2d');
+        historyChart = new Chart(ctxHist, {
+          type: 'bar',
+          data: {
+            labels: sentimentData.history.map(x => x.date),
+            datasets: [
+              {
+                type: 'line',
+                label: '24h Forward Volatility %',
+                data: sentimentData.history.map(x => x.vol_24h),
+                borderColor: '#ef4444',
+                borderWidth: 2,
+                yAxisID: 'yVol'
+              },
+              {
+                label: 'Put-Call Ratio (PCR)',
+                data: sentimentData.history.map(x => x.pcr),
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                yAxisID: 'yPcr'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { labels: { color: '#888e99' } } },
+            scales: {
+              x: { grid: { color: '#1c1f26' }, ticks: { color: '#5c626d' } },
+              yVol: { position: 'left', grid: { color: '#1c1f26' }, ticks: { color: '#ef4444' } },
+              yPcr: { position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#888e99' } }
+            }
+          }
+        });
+      }
+    }
+
+    function updatePcrPeriod(period, btn) {
+      document.querySelectorAll('#subtab-pcr .btn').forEach(b => b.classList.remove('btn-white'));
+      btn.classList.add('btn-white');
+      if (pcrChart && sentimentData) {
+        const vals = sentimentData.pcr.periods[period];
+        pcrChart.data.datasets[0].data = vals;
+        pcrChart.data.labels = vals.map((_, i) => `T-${vals.length - i}`);
+        pcrChart.update();
+      }
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchGapStormData();
+      fetchDomino();
+      fetchWhatIf();
+      fetchNews();
+      fetchDisagreement();
+      fetchStressMemory();
+      fetchBlindspots();
+      fetchSentiment();
+    });
+  </script>
+</body>
+</html>
